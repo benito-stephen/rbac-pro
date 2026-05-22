@@ -1,0 +1,95 @@
+export const ROLES = {
+  ADMIN: 'admin',
+  USER: 'user',
+};
+
+export const USER_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+};
+
+export const PERMISSIONS = {
+  USERS_READ: 'users:read',
+  USERS_WRITE: 'users:write',
+  USERS_DELETE: 'users:delete',
+  USERS_SUSPEND: 'users:suspend',
+  TASKS_READ_ALL: 'tasks:read:all',
+  TASKS_DELETE_ANY: 'tasks:delete:any',
+  TASKS_READ_OWN: 'tasks:read:own',
+  TASKS_WRITE_OWN: 'tasks:write:own',
+  TASKS_DELETE_OWN: 'tasks:delete:own',
+  ANALYTICS_READ: 'analytics:read',
+  AUDIT_READ: 'audit:read',
+  PROJECTS_READ: 'projects:read',
+  PROJECTS_WRITE: 'projects:write',
+};
+
+export const ROLE_PERMISSIONS = {
+  [ROLES.ADMIN]: [
+    PERMISSIONS.USERS_READ,
+    PERMISSIONS.USERS_WRITE,
+    PERMISSIONS.USERS_DELETE,
+    PERMISSIONS.USERS_SUSPEND,
+    PERMISSIONS.TASKS_READ_ALL,
+    PERMISSIONS.TASKS_DELETE_ANY,
+    PERMISSIONS.ANALYTICS_READ,
+    PERMISSIONS.AUDIT_READ,
+    PERMISSIONS.PROJECTS_READ,
+    PERMISSIONS.PROJECTS_WRITE,
+  ],
+  [ROLES.USER]: [
+    PERMISSIONS.TASKS_READ_OWN,
+    PERMISSIONS.TASKS_WRITE_OWN,
+    PERMISSIONS.TASKS_DELETE_OWN,
+    PERMISSIONS.PROJECTS_READ,
+    PERMISSIONS.PROJECTS_WRITE,
+  ],
+};
+
+export const getPermissionsForRole = (role) => ROLE_PERMISSIONS[role] || [];
+
+export const TASK_STATUS = {
+  TODO: 'todo',
+  IN_PROGRESS: 'in_progress',
+  IN_REVIEW: 'in_review',
+  DONE: 'done',
+  BLOCKED: 'blocked',
+};
+
+export const TASK_PRIORITY = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  URGENT: 'urgent',
+};
+
+export const ACTIVITY_ACTIONS = {
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  LOGIN_FAILED: 'LOGIN_FAILED',
+  REGISTER: 'REGISTER',
+  TASK_CREATED: 'TASK_CREATED',
+  TASK_UPDATED: 'TASK_UPDATED',
+  TASK_DELETED: 'TASK_DELETED',
+  TASK_COMPLETED: 'TASK_COMPLETED',
+  USER_CREATED: 'USER_CREATED',
+  USER_UPDATED: 'USER_UPDATED',
+  USER_DELETED: 'USER_DELETED',
+  USER_SUSPENDED: 'USER_SUSPENDED',
+  USER_ACTIVATED: 'USER_ACTIVATED',
+  PASSWORD_RESET: 'PASSWORD_RESET',
+};
+
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  INTERNAL_SERVER_ERROR: 500,
+};
+
+// Legacy aliases for existing routes
+export const DEFAULT_ROLE_PERMISSIONS = ROLE_PERMISSIONS;
