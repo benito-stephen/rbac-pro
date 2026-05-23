@@ -35,3 +35,7 @@ coverage/
 # Misc
 *.pem
 .cache/
+.vite/
+
+# Vite cache (do not commit)
+frontend/.vite/
