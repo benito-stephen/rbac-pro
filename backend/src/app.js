@@ -28,10 +28,19 @@ const isLocalDevOrigin = (origin) =>
   process.env.NODE_ENV !== 'production' &&
   /^https?:\/\/localhost(:\d+)?$/.test(origin);
 
+const isVercelOrigin = (origin) =>
+  process.env.NODE_ENV === 'production' &&
+  /^https:\/\/[\w.-]+\.vercel\.app$/.test(origin);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || isLocalDevOrigin(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        isLocalDevOrigin(origin) ||
+        isVercelOrigin(origin)
+      ) {
         callback(null, true);
       } else {
         callback(new Error(`CORS blocked for origin: ${origin}`));

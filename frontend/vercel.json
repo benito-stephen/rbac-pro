@@ -1,3 +1,8 @@
 {
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://rbac-pro.onrender.com/api"
+    }
+  },
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

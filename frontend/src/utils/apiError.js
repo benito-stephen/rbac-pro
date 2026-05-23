@@ -2,7 +2,9 @@ export const getApiErrorMessage = (err, fallback = 'Something went wrong') => {
   if (!err?.response) {
     if (err?.code === 'ECONNABORTED') return 'Request timed out. Is the server running?';
     if (err?.message === 'Network Error') {
-      return 'Cannot reach server. Start the backend on port 5000.';
+      return import.meta.env.PROD
+        ? 'Cannot reach the API. Check deployment configuration.'
+        : 'Cannot reach server. Start the backend on port 5000.';
     }
     return err?.message || fallback;
   }
