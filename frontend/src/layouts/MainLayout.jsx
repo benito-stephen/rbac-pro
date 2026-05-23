@@ -37,31 +37,12 @@ const iconMap = {
   FileText,
 };
 
-export default function MainLayout() {
-  useSessionTimeout();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { user, logout } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
-  const { isAdmin } = usePermissions();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  const filterByRole = (items) =>
-    items.filter((item) => !item.roles || item.roles.includes(user?.role));
-
-  const navItems = filterByRole(NAV_ITEMS);
-  const adminItems = isAdmin() ? filterByRole(ADMIN_NAV_ITEMS) : [];
-
-  const NavContent = () => (
+function SidebarNav({ user, navItems, adminItems, onNavigate }) {
+  return (
     <>
       <Link
         to="/dashboard"
-        onClick={() => setSidebarOpen(false)}
+        onClick={onNavigate}
         className="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition"
       >
         <div className="p-2 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600">
@@ -76,17 +57,18 @@ export default function MainLayout() {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">Workspace</p>
         {navItems.map((item) => {
-          const Icon = iconMap[item.icon];
+          const Icon = iconMap[item.icon] || LayoutDashboard;
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              onClick={() => setSidebarOpen(false)}
+              end={item.path === '/dashboard'}
+              onClick={onNavigate}
               className={({ isActive }) =>
                 cn('nav-link', isActive ? 'nav-link-active' : 'nav-link-inactive')
               }
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-5 w-5 shrink-0" />
               {item.label}
             </NavLink>
           );
@@ -96,17 +78,18 @@ export default function MainLayout() {
           <>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mt-6 mb-2">Administration</p>
             {adminItems.map((item) => {
-              const Icon = iconMap[item.icon];
+              const Icon = iconMap[item.icon] || LayoutDashboard;
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  onClick={() => setSidebarOpen(false)}
+                  end={item.path === '/admin'}
+                  onClick={onNavigate}
                   className={({ isActive }) =>
                     cn('nav-link', isActive ? 'nav-link-active' : 'nav-link-inactive')
                   }
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5 shrink-0" />
                   {item.label}
                 </NavLink>
               );
@@ -116,11 +99,41 @@ export default function MainLayout() {
       </nav>
     </>
   );
+}
+
+export default function MainLayout() {
+  useSessionTimeout();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const { isAdmin } = usePermissions();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const closeSidebar = () => setSidebarOpen(false);
+
+  const filterByRole = (items) =>
+    items.filter((item) => !item.roles || item.roles.includes(user?.role));
+
+  const navItems = filterByRole(NAV_ITEMS);
+  const adminItems = isAdmin() ? filterByRole(ADMIN_NAV_ITEMS) : [];
+
+  const sidebarProps = {
+    user,
+    navItems,
+    adminItems,
+    onNavigate: closeSidebar,
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-950">
       <aside className="hidden lg:flex lg:w-64 flex-col border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <NavContent />
+        <SidebarNav {...sidebarProps} />
       </aside>
 
       <AnimatePresence>
@@ -144,7 +157,7 @@ export default function MainLayout() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              <NavContent />
+              <SidebarNav {...sidebarProps} />
             </motion.aside>
           </>
         )}
