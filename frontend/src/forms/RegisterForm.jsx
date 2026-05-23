@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
@@ -9,10 +10,15 @@ import Button from '../shared/Button';
 import { registerSchema } from './authSchemas';
 import { useAuthStore } from '../context/store/authStore';
 import { getApiErrorMessage } from '../utils/apiError';
+import api from '../services/api';
 
 export default function RegisterForm() {
   const registerUser = useAuthStore((s) => s.register);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get('/health').catch(() => {});
+  }, []);
   const {
     register,
     handleSubmit,

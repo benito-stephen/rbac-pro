@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../context/store/authStore';
 import { usePermissions } from '../hooks/usePermissions';
@@ -7,6 +8,13 @@ export function ProtectedRoute({ children, adminOnly, roles, permission }) {
   const { isAuthenticated, isLoading, isSessionExpired, logout } = useAuthStore();
   const { isAdmin, hasRole, can } = usePermissions();
   const location = useLocation();
+  const sessionExpired = isSessionExpired();
+
+  useEffect(() => {
+    if (sessionExpired && isAuthenticated) {
+      logout();
+    }
+  }, [sessionExpired, isAuthenticated, logout]);
 
   if (isLoading) {
     return (
@@ -20,8 +28,7 @@ export function ProtectedRoute({ children, adminOnly, roles, permission }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (isSessionExpired()) {
-    logout();
+  if (sessionExpired) {
     return <Navigate to="/login" state={{ from: location, reason: 'session_expired' }} replace />;
   }
 
@@ -43,7 +50,13 @@ export function ProtectedRoute({ children, adminOnly, roles, permission }) {
 export function PublicRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    );
+  }
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return children;

@@ -27,7 +27,7 @@ const processQueue = (error, token = null) => {
 const PUBLIC_AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/'];
 
 const forceLogout = () => {
-  useAuthStore.getState().clearSession();
+  useAuthStore.getState().resetAuth();
   const path = window.location.pathname;
   const isPublic = PUBLIC_AUTH_PATHS.includes(path);
   if (!isPublic) {

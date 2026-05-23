@@ -32,13 +32,20 @@ export const useAuthStore = create(
         }
       },
 
-      clearSession: () =>
+      clearSession: () => {
         set({
           user: null,
           accessToken: null,
           isAuthenticated: false,
           sessionExpiresAt: null,
-        }),
+          isLoading: false,
+        });
+      },
+
+      resetAuth: () => {
+        get().clearSession();
+        useAuthStore.persist.clearStorage();
+      },
 
       login: async (credentials) => {
         const { data } = await authService.login(credentials);
@@ -46,6 +53,7 @@ export const useAuthStore = create(
           user: data.data.user,
           accessToken: data.data.accessToken,
           isAuthenticated: true,
+          isLoading: false,
           lastActivity: Date.now(),
           sessionExpiresAt: Date.now() + SESSION_TIMEOUT_MS,
         });
@@ -58,6 +66,7 @@ export const useAuthStore = create(
           user: data.data.user,
           accessToken: data.data.accessToken,
           isAuthenticated: true,
+          isLoading: false,
           lastActivity: Date.now(),
           sessionExpiresAt: Date.now() + SESSION_TIMEOUT_MS,
         });
@@ -68,22 +77,40 @@ export const useAuthStore = create(
         try {
           await authService.logout();
         } finally {
-          get().clearSession();
+          get().resetAuth();
         }
       },
 
       checkAuth: async () => {
         set({ isLoading: true });
-        try {
-          const { data } = await authService.getMe();
+        const token = get().accessToken;
+
+        const applyUser = (user, accessToken = get().accessToken) => {
           set({
-            user: data.data.user,
+            user,
+            accessToken,
             isAuthenticated: true,
             isLoading: false,
             lastActivity: Date.now(),
             sessionExpiresAt: Date.now() + SESSION_TIMEOUT_MS,
           });
+        };
+
+        try {
+          if (token) {
+            const { data } = await authService.getMe();
+            applyUser(data.data.user);
+            return;
+          }
+
+          const refreshed = await get().refreshSession();
+          if (!refreshed) {
+            get().clearSession();
+            set({ isLoading: false });
+          }
         } catch {
+          const refreshed = await get().refreshSession();
+          if (refreshed) return;
           get().clearSession();
           set({ isLoading: false });
         }
@@ -95,12 +122,13 @@ export const useAuthStore = create(
           set({
             accessToken: data.data.accessToken,
             user: data.data.user,
+            isAuthenticated: true,
+            isLoading: false,
             lastActivity: Date.now(),
             sessionExpiresAt: Date.now() + SESSION_TIMEOUT_MS,
           });
           return true;
         } catch {
-          get().clearSession();
           return false;
         }
       },
@@ -109,8 +137,8 @@ export const useAuthStore = create(
 
       isSessionExpired: () => {
         const { sessionExpiresAt, isAuthenticated } = get();
-        if (!isAuthenticated) return true;
-        return sessionExpiresAt && Date.now() > sessionExpiresAt;
+        if (!isAuthenticated) return false;
+        return sessionExpiresAt != null && Date.now() > sessionExpiresAt;
       },
     }),
     {

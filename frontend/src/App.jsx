@@ -8,7 +8,6 @@ const PUBLIC_AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-p
 
 function App() {
   const { theme, initTheme } = useThemeStore();
-  const { checkAuth, clearSession } = useAuthStore();
   const location = useLocation();
   const isPublicAuth = PUBLIC_AUTH_ROUTES.includes(location.pathname);
 
@@ -17,13 +16,25 @@ function App() {
   }, [initTheme]);
 
   useEffect(() => {
-    if (isPublicAuth) {
-      clearSession();
-      useAuthStore.setState({ isLoading: false });
-    } else {
-      checkAuth();
-    }
-  }, [isPublicAuth, checkAuth, clearSession, location.pathname]);
+    const bootAuth = async () => {
+      if (isPublicAuth) {
+        const { isAuthenticated, accessToken } = useAuthStore.getState();
+        if (isAuthenticated && useAuthStore.getState().user) {
+          useAuthStore.setState({ isLoading: false });
+          return;
+        }
+        if (accessToken) {
+          await useAuthStore.getState().checkAuth();
+        } else {
+          useAuthStore.setState({ isLoading: false });
+        }
+      } else {
+        await useAuthStore.getState().checkAuth();
+      }
+    };
+
+    bootAuth();
+  }, [isPublicAuth, location.pathname]);
 
   useEffect(() => {
     const root = document.documentElement;

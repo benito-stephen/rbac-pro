@@ -51,7 +51,11 @@ export const register = asyncHandler(async (req, res) => {
 
   const verificationToken = user.createEmailVerificationToken();
   await user.save({ validateBeforeSave: false });
-  await sendWelcomeEmail(user, verificationToken);
+  try {
+    await sendWelcomeEmail(user, verificationToken);
+  } catch {
+    // Registration should succeed even if email delivery fails
+  }
 
   const { accessToken } = await issueTokens(user, res);
 
@@ -117,13 +121,30 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  if (req.user) {
-    req.user.refreshToken = undefined;
-    req.user.refreshTokenExpires = undefined;
-    req.user.tokenVersion += 1;
-    await req.user.save({ validateBeforeSave: false });
-    await logActivity({ user: req.user._id, action: ACTIVITY_ACTIONS.LOGOUT, resource: 'user', resourceId: req.user._id, req });
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (refreshToken) {
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+      const user = await User.findById(decoded.id).select('+refreshToken');
+      if (user) {
+        user.refreshToken = undefined;
+        user.refreshTokenExpires = undefined;
+        user.tokenVersion += 1;
+        await user.save({ validateBeforeSave: false });
+        await logActivity({
+          user: user._id,
+          action: ACTIVITY_ACTIONS.LOGOUT,
+          resource: 'user',
+          resourceId: user._id,
+          req,
+        });
+      }
+    } catch {
+      // Still clear cookies even if token is invalid or expired
+    }
   }
+
   clearTokenCookies(res);
   ApiResponse.success(res, { message: 'Logged out successfully' });
 });

@@ -1,8 +1,13 @@
 import api from './api';
 
+const withNormalizedEmail = (data) => ({
+  ...data,
+  email: typeof data.email === 'string' ? data.email.trim().toLowerCase() : data.email,
+});
+
 export const authService = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
+  register: (data) => api.post('/auth/register', withNormalizedEmail(data)),
+  login: (data) => api.post('/auth/login', withNormalizedEmail(data)),
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.patch('/auth/profile', data),

@@ -22,14 +22,18 @@ export const buildTokenPayload = (user) => ({
   tokenVersion: user.tokenVersion,
 });
 
-export const setTokenCookies = (res, accessToken, refreshToken) => {
+export const getCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === 'production';
-  const cookieOptions = {
+  return {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax',
     path: '/',
   };
+};
+
+export const setTokenCookies = (res, accessToken, refreshToken) => {
+  const cookieOptions = getCookieOptions();
 
   res.cookie('accessToken', accessToken, {
     ...cookieOptions,
@@ -43,6 +47,7 @@ export const setTokenCookies = (res, accessToken, refreshToken) => {
 };
 
 export const clearTokenCookies = (res) => {
-  res.clearCookie('accessToken', { path: '/' });
-  res.clearCookie('refreshToken', { path: '/' });
+  const opts = getCookieOptions();
+  res.clearCookie('accessToken', opts);
+  res.clearCookie('refreshToken', opts);
 };
