@@ -12,7 +12,8 @@ const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30000,
+  // Render free tier can take 60s+ to wake from sleep
+  timeout: import.meta.env.PROD ? 120000 : 30000,
 });
 
 let isRefreshing = false;

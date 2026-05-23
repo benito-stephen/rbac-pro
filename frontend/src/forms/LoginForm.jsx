@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
@@ -9,10 +10,16 @@ import Button from '../shared/Button';
 import { loginSchema } from './authSchemas';
 import { useAuthStore } from '../context/store/authStore';
 import { getApiErrorMessage } from '../utils/apiError';
+import api from '../services/api';
 
 export default function LoginForm() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+
+  // Wake Render free-tier instance before the user submits (can take 60s+ when cold)
+  useEffect(() => {
+    api.get('/health').catch(() => {});
+  }, []);
   const {
     register,
     handleSubmit,
