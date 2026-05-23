@@ -39,3 +39,5 @@ coverage/
 
 # Vite cache (do not commit)
 frontend/.vite/
+deploy/local.env
+deploy/secrets.txt
