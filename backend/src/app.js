@@ -24,10 +24,14 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .map((o) => o.trim())
   .filter(Boolean);
 
+const isLocalDevOrigin = (origin) =>
+  process.env.NODE_ENV !== 'production' &&
+  /^https?:\/\/localhost(:\d+)?$/.test(origin);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || isLocalDevOrigin(origin)) {
         callback(null, true);
       } else {
         callback(new Error(`CORS blocked for origin: ${origin}`));
